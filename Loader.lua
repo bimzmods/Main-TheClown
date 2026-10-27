@@ -1,5 +1,5 @@
 local Games = {
-    [1234567890] = "https://example.com/game1.lua",
+    [7633926880] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Bloxstrike_BZ.lua",
     [9876543210] = "https://example.com/game2.lua",
 }
 
