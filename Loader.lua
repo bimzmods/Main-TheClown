@@ -1,19 +1,18 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
--- ===== SETTING =====
 local Games = {
     [7633926880] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Bloxstrike_BZ.lua",
     [9876543210] = "https://example.com/game2.lua",
 }
-local HWIDs = {}   
+local HWIDs = {}
 local DELAY = 3
 
 local FOLDER    = "BZ Menu"
 local CACHE     = FOLDER .. "/cache"
 local LOGO_URL  = "https://raw.githubusercontent.com/bimzmods/Ui-BZ/main/Asset/Logo.png"
 local LOGO_PATH = CACHE .. "/Logo.png"
--- ===================
 
 local GREEN = Color3.fromRGB(46, 204, 113)
 local RED   = Color3.fromRGB(255, 85, 85)
@@ -30,7 +29,6 @@ local function getLogo()
     return ok and result or ""
 end
 
--- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "ClownLoader"
 gui.ResetOnSpawn = false
@@ -48,6 +46,10 @@ main.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
 main.BorderSizePixel = 0
 main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 24)
+
+local scale = Instance.new("UIScale")
+scale.Scale = 0
+scale.Parent = main
 
 local logo = Instance.new("ImageLabel")
 logo.Size = UDim2.fromOffset(100, 100)
@@ -75,7 +77,19 @@ title.TextSize = 22
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = content
 
--- Step (spinner -> centang)
+local function popIn()
+    local t = TweenService:Create(scale, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1})
+    t:Play()
+    t.Completed:Wait()
+end
+
+local function popOut()
+    local t = TweenService:Create(scale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Scale = 0})
+    t:Play()
+    t.Completed:Wait()
+    gui:Destroy()
+end
+
 local function makeStep(text, y)
     local icon = Instance.new("Frame")
     icon.Size = UDim2.fromOffset(22, 22)
@@ -139,15 +153,16 @@ local function makeStep(text, y)
     return step
 end
 
--- Alur loading
 task.spawn(function()
+    popIn()
+
     local s1 = makeStep("Checking ID Game...", 70)
     task.wait(DELAY)
-    local link = Games[game.PlaceId]
+    local link = Games[game.GameId]
     if not link then
         s1.fail("Game belum didukung")
         task.wait(2)
-        gui:Destroy()
+        popOut()
         return
     end
     s1.done()
@@ -162,7 +177,7 @@ task.spawn(function()
     if #HWIDs > 0 and not table.find(HWIDs, hwid) then
         s2.fail("HWID tidak terdaftar")
         task.wait(2)
-        gui:Destroy()
+        popOut()
         return
     end
     s2.done()
@@ -171,7 +186,7 @@ task.spawn(function()
     task.wait(DELAY)
     s3.done()
     task.wait(0.5)
-    gui:Destroy()
+    popOut()
 
     local ok, err = pcall(function()
         loadstring(game:HttpGet(link))()
