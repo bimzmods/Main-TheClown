@@ -5,7 +5,7 @@ local Lighting = game:GetService("Lighting")
 
 local Games = {
     [7633926880] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Bloxstrike_BZ.lua",
-    [9876543210] = "https://example.com/game2.lua",
+    [10624691669] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Monochrome_obf.lua",
 }
 local HWIDs = {}
 local DELAY = 3
