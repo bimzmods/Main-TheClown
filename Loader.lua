@@ -32,6 +32,16 @@ local function getLogo()
     return ok and result or ""
 end
 
+local function getHWID()
+    local hwid
+    pcall(function()
+        hwid = (gethwid and gethwid())
+            or game:GetService("RbxAnalyticsService"):GetClientId()
+    end)
+    if hwid then getgenv().BZ_HWID = hwid end
+    return hwid
+end
+
 local function tw(obj, t, props, style, dir)
     local tween = TweenService:Create(obj, TweenInfo.new(t, style or Enum.EasingStyle.Quint, dir or Enum.EasingDirection.Out), props)
     tween:Play()
@@ -288,17 +298,7 @@ task.spawn(function()
 
     local s2 = makeStep("Checking HWID...", 128)
     task.wait(DELAY)
-    local hwid
-    pcall(function()
-        hwid = (gethwid and gethwid())
-            or game:GetService("RbxAnalyticsService"):GetClientId()
-    end)
-    if #HWIDs > 0 and not table.find(HWIDs, hwid) then
-        s2.fail("HWID tidak terdaftar")
-        task.wait(2)
-        popOut()
-        return
-    end
+    local hwid = getHWID()
     s2.done()
     setProgress(0.66)
     task.wait(0.4)
