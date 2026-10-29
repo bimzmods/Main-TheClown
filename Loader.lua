@@ -4,7 +4,7 @@ local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 
 local Games = {
-    [7633926880] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Bloxstrike_BZ.lua",
+    [7633926880] = "https://raw.githubusercontent.com/bimzmods/Ui-BZ/refs/heads/main/Asset/Other/Games/Bloxstrike_BZ_obf.lua",
     [10624691669] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Monochrome_obf.lua",
 }
 local HWIDs = {}
