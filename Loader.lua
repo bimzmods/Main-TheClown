@@ -8,8 +8,6 @@ local Games = {
     [10624691669] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Monochrome_obf.lua",
     [2440500124] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Doors_BZ.lua",
 }
-local HWIDs = {}
-local DELAY = 3
 
 local FOLDER    = "BZ Menu"
 local CACHE     = FOLDER .. "/cache"
@@ -109,9 +107,14 @@ logo.Size = UDim2.fromOffset(96, 96)
 logo.AnchorPoint = Vector2.new(0.5, 0.5)
 logo.Position = UDim2.new(0, 78, 0.5, -14)
 logo.BackgroundTransparency = 1
-logo.Image = getLogo()
+logo.Image = ""
 logo.ScaleType = Enum.ScaleType.Fit
 logo.Parent = main
+
+task.spawn(function()
+    local img = getLogo()
+    if logo.Parent then logo.Image = img end
+end)
 
 local content = Instance.new("Frame")
 content.Size = UDim2.new(1, -164, 1, 0)
@@ -134,7 +137,7 @@ local sub = Instance.new("TextLabel")
 sub.Size = UDim2.new(1, -60, 0, 16)
 sub.Position = UDim2.fromOffset(0, 50)
 sub.BackgroundTransparency = 1
-sub.Text = "Secure Loader  •  v1.0"
+sub.Text = "Secure Loader  •  v1.1"
 sub.TextColor3 = Color3.fromRGB(130, 130, 150)
 sub.Font = Enum.Font.Gotham
 sub.TextSize = 12
@@ -172,9 +175,23 @@ local fillGrad = Instance.new("UIGradient")
 fillGrad.Color = ColorSequence.new(ACCENT, ACCENT2)
 fillGrad.Parent = fill
 
-local function setProgress(p)
-    tw(fill, 0.5, {Size = UDim2.fromScale(p, 1)})
-    percent.Text = math.floor(p * 100) .. "%"
+local target, shown = 0, 0
+
+local function setTarget(p)
+    target = math.clamp(math.max(target, p), 0, 1)
+end
+
+local progConn = RunService.RenderStepped:Connect(function(dt)
+    shown = shown + (target - shown) * math.min(1, dt * 7)
+    if target >= 1 and shown > 0.996 then shown = 1 end
+    fill.Size = UDim2.fromScale(shown, 1)
+    percent.Text = math.floor(shown * 100 + 0.5) .. "%"
+end)
+
+local function waitProgressDone()
+    while shown < 1 do
+        RunService.RenderStepped:Wait()
+    end
 end
 
 local floatConn = RunService.RenderStepped:Connect(function()
@@ -198,6 +215,7 @@ local function popOut()
     tw(mainScale, 0.4, {Scale = 0.88}, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
     tw(main, 0.35, {GroupTransparency = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.In).Completed:Wait()
     floatConn:Disconnect()
+    progConn:Disconnect()
     blur:Destroy()
     gui:Destroy()
 end
@@ -285,7 +303,7 @@ task.spawn(function()
     popIn()
 
     local s1 = makeStep("Checking ID Game...", 88)
-    task.wait(DELAY)
+    setTarget(0.05)
     local link = Games[game.GameId]
     if not link then
         s1.fail("Game belum didukung")
@@ -293,27 +311,55 @@ task.spawn(function()
         popOut()
         return
     end
+    task.wait(0.25) 
     s1.done()
-    setProgress(0.33)
-    task.wait(0.4)
+    setTarget(0.15)
 
     local s2 = makeStep("Checking HWID...", 128)
-    task.wait(DELAY)
-    local hwid = getHWID()
+    getHWID()
+    task.wait(0.25)
     s2.done()
-    setProgress(0.66)
-    task.wait(0.4)
+    setTarget(0.30)
 
     local s3 = makeStep("Loading Script...", 168)
-    task.wait(DELAY)
+    local result, dlOk, finished = nil, false, false
+    task.spawn(function()
+        dlOk, result = pcall(function()
+            return game:HttpGet(link)
+        end)
+        finished = true
+    end)
+
+    while not finished do
+        setTarget(target + (0.90 - target) * 0.015)
+        RunService.RenderStepped:Wait()
+    end
+
+    if not dlOk or type(result) ~= "string" or #result == 0 then
+        s3.fail("Gagal download script")
+        warn("Gagal download script: " .. tostring(result))
+        task.wait(2)
+        popOut()
+        return
+    end
+
+    setTarget(0.95)
+    local fn, compileErr = loadstring(result)
+    if not fn then
+        s3.fail("Script error")
+        warn("Gagal compile script: " .. tostring(compileErr))
+        task.wait(2)
+        popOut()
+        return
+    end
+
+    setTarget(1)
+    waitProgressDone() 
     s3.done()
-    setProgress(1)
-    task.wait(0.8)
+    task.wait(0.35)
     popOut()
 
-    local ok, err = pcall(function()
-        loadstring(game:HttpGet(link))()
-    end)
+    local ok, err = pcall(fn)
     if not ok then
         warn("Gagal load script: " .. tostring(err))
     end
