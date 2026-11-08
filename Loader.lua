@@ -7,6 +7,7 @@ local Games = {
     [7633926880] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Bloxstrike_BZ.lua",
     [10624691669] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Monochrome_obf.lua",
     [2440500124] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/Doors_BZ.lua",
+    [10768625767] = "https://raw.githubusercontent.com/bimzmods/Main-TheClown/refs/heads/main/Games/STTK_BZ.lua",
 }
 
 local FOLDER    = "BZ Menu"
